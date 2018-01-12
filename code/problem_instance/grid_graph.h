@@ -74,10 +74,10 @@ class GridGraph :
 
   size_t GetNumVertices() const { return boost::num_vertices(*this); }
 
-  bool has_boundary(FieldId v) const;
-  bool has_north_boundary(FieldId v) const;
-  bool has_east_boundary(FieldId v) const;
-  bool has_west_boundary(FieldId v) const;
+  bool HasBoundary(FieldId v) const;
+  bool HasNorthBoundary(FieldId v) const;
+  bool HasEastBoundary(FieldId v) const;
+  bool HasWestBoundary(FieldId v) const;
 
   GridGraph() {}
   GridGraph(std::set<Coordinate> &coords);

@@ -48,7 +48,7 @@ GridGraph::BuildGraphFromCoordinates(const std::set<Coordinate> &coords)
 }
 
 bool
-GridGraph::has_west_boundary(FieldId v)
+GridGraph::HasWestBoundary(FieldId v)
 const
 {
   auto coord = GetCoordinate(v);
@@ -59,7 +59,7 @@ const
 }
 
 bool
-GridGraph::has_east_boundary(FieldId v)
+GridGraph::HasEastBoundary(FieldId v)
 const
 {
   auto coord = GetCoordinate(v);
@@ -70,7 +70,7 @@ const
 }
 
 bool
-GridGraph::has_north_boundary(FieldId v)
+GridGraph::HasNorthBoundary(FieldId v)
 const
 {
   auto coord = GetCoordinate(v);
@@ -81,7 +81,7 @@ const
 }
 
 bool
-GridGraph::has_boundary(FieldId v)
+GridGraph::HasBoundary(FieldId v)
 const
 {
   auto neighbor_container = GetNeighbors(v);
