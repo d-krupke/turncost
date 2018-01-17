@@ -22,11 +22,11 @@ TEST(IpPenalty, Large)
   costs.dist_costs = 1;
 
   turncostcover::ip_formulation1::IpSolver solver{graph, costs};
-  auto apx_solution = apx::ApproximateTour(graph, costs);
+  auto apx_solution = turncostcover::apx::ApproximateTour(graph, costs);
   turncostcover::CostUnit apx_obj =
       apx_solution.GetCoverageObjectiveValue(costs);
   std::cout << "APX T OBJ = " << apx_obj << std::endl;
-  auto apx_cc_solution = apx::ApproximateCycleCover(graph, costs);
+  auto apx_cc_solution = turncostcover::apx::ApproximateCycleCover(graph, costs);
   turncostcover::CostUnit apx_cc_obj =
       apx_solution.GetCoverageObjectiveValue(costs);
   std::cout << "APX CC OBJ = " << apx_cc_obj << std::endl;
@@ -125,7 +125,7 @@ TEST(IpPenalty, DifficultConnectTest)
     std::cout << "Added " << s2.Separate(solution) << " sufficient separation constraints" << std::endl;
     std::cout << "Added " << s3.Separate(solution) << " voronoi separation constraints" << std::endl;
     auto connected_solution = solution;
-    apx::connect::ConnectDistantCycles(&solution, costs);
+    apx::ConnectDistantCycles(&solution, costs);
     solver.AddSolution(connected_solution, "connected");
     solver.AddSolution(apx_solution_t, "apx-t");
     solver.Solve();

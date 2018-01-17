@@ -38,7 +38,7 @@ IntegralSolution ComputeOptimalTour(const GridGraph &graph,
   auto start_time = clock::now();
   IpSolver solver{graph, costs};
 
-  //initial solve
+  //initial Solve
   auto apx_solution_tour = apx::ApproximateTour(graph, costs);
   auto apx_solution_cc = apx::ApproximateCycleCover(graph, costs);
   solver.AddSolution(apx_solution_tour, "APXT");
@@ -49,7 +49,7 @@ IntegralSolution ComputeOptimalTour(const GridGraph &graph,
   while (FullCoverageSimpleSeparator{&solver}.Separate(ip_solution)
       + FullCoverageSufficientSeparation{&solver}.Separate(ip_solution) > 0) {
     solver.AddSolution(apx_solution_tour, "APXT");
-    apx::connect::ConnectAdjacentCycles(&ip_solution, costs);
+    apx::ConnectAdjacentCycles(&ip_solution, costs);
     solver.AddSolution(ip_solution, "ConnectedPreviousSolution");
     auto passed = duration_cast<time_unit>(clock::now() - start_time).count();
     auto remaining_time_s = deadline - passed;
@@ -63,7 +63,7 @@ IntegralSolution ComputeOptimalTour(const GridGraph &graph,
         << "Final solution of IP is not connected (probably due to timeout). "
         << "Connecting it via heuristic."
         << std::endl;
-    apx::connect::ConnectAdjacentCycles(&ip_solution, costs);
+    apx::ConnectAdjacentCycles(&ip_solution, costs);
   }
   return ip_solution;
 }

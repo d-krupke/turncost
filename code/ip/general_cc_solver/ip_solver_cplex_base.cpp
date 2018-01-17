@@ -32,7 +32,7 @@ IpSolverCplexBase::ReturnTypes IpSolverCplexBase::Solve(double max_time_s)
     std::cout << "Solving with time limit " << max_time_s << " seconds"
               << std::endl;
     if (max_time_s <= 0) {
-      std::cout << "Abort solve(): OUT_OF_TIME" << std::endl;
+      std::cout << "Abort Solve(): OUT_OF_TIME" << std::endl;
       return status_ = ReturnTypes::OUT_OF_TIME;
     }
     cplex_solver_.setParam(IloCplex::TiLim, max_time_s);
@@ -42,14 +42,14 @@ IpSolverCplexBase::ReturnTypes IpSolverCplexBase::Solve(double max_time_s)
   //Solve
   try {
     if (!cplex_solver_.solve()) {
-      std::cout << "Failed solve(): " << cplex_solver_.getCplexStatus()
+      std::cout << "Failed Solve(): " << cplex_solver_.getCplexStatus()
                 << std::endl;
       return status_ = ReturnTypes::ERROR;
     }
     lower_bound_ = std::max(lower_bound_, cplex_solver_.getBestObjValue());
   } catch (IloException e) {
     std::cerr << "Error while solving: " << e << std::endl;
-    std::cout << "Failed solve(): " << cplex_solver_.getCplexStatus()
+    std::cout << "Failed Solve(): " << cplex_solver_.getCplexStatus()
               << std::endl;
     return status_ = ReturnTypes::ERROR;
   }
@@ -83,7 +83,7 @@ IpSolverCplexBase::IpSolverCplexBase(const GridGraph &instance,
 IpSolverCplexBase::ReturnTypes IpSolverCplexBase::EvaluateSolveStatus()
 {
   if (cplex_solver_.getCplexStatus() == IloCplex::AbortTimeLim) {
-    std::cout << "Abort solve(): OUT_OF_TIME" << std::endl;
+    std::cout << "Abort Solve(): OUT_OF_TIME" << std::endl;
     return ReturnTypes::OUT_OF_TIME;
   } else if (cplex_solver_.getCplexStatus() == IloCplex::Optimal) {
     std::cout << "Solved IP to optimality with solution: "
@@ -94,7 +94,7 @@ IpSolverCplexBase::ReturnTypes IpSolverCplexBase::EvaluateSolveStatus()
               << cplex_solver_.getObjValue() << std::endl;
     return ReturnTypes::SUCCESSFUL;
   } else {
-    std::cout << "Failed solve(): " << cplex_solver_.getCplexStatus()
+    std::cout << "Failed Solve(): " << cplex_solver_.getCplexStatus()
               << std::endl;
     return ReturnTypes::ERROR;
   }
