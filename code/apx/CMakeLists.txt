@@ -10,7 +10,6 @@ set(APX_SOURCES
         ./cyclecover/orientation_selection/linear_program
         ./cyclecover/orientation_selection/select_orientations
         ./cyclecover/orientation_matching
-        ./cyclecover/auxiliary
         ./connect/details/greedy_connect
         ./cyclecover/orientation_matching/local_orientation_matching/auxiliary_graph
         ./connect/details/component_edge

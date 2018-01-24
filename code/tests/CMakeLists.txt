@@ -13,7 +13,7 @@ add_executable(unit_tester
         ../shortest_path/grid_graph
         ../shortest_path/turn_cost_grid_dijkstra
         ../apx/approximation_gtest.cpp
-        ../ip/general_cc_solver/ip_solver_gtest.cpp ../ip/subset_separation/voronoi_extender_gtest.cpp.cpp ../ip/fc_separation/full_coverage_gtest.cpp ../ip/subset_separation/subset_coverage_gtest.cpp ../ip/penalty_separation/penalty_coverage_gtest.cpp ../arkin-apx/strip_cover/Strip_gtest.cpp ../arkin-apx/strip_cover/StripExtractor_gtest.cpp ../arkin-apx/strip_matching/StripMatchingSolver_gtest.cpp ../arkin-apx/approximation_gtest.cpp ../arkin-apx/strip_cover/StripCover_gtest.cpp)
+        ../ip/general_cc_solver/ip_solver_gtest.cpp ../ip/subset_separation/voronoi_extender_gtest.cpp.cpp ../ip/fc_separation/full_coverage_gtest.cpp ../ip/subset_separation/subset_coverage_gtest.cpp ../ip/penalty_separation/penalty_coverage_gtest.cpp ../arkin-apx/strip_cover/strip_gtest.cpp ../arkin-apx/strip_cover/strip_extractor_gtest.cpp ../arkin-apx/strip_matching/strip_matching_solver_gtest.cpp ../arkin-apx/approximation_gtest.cpp ../arkin-apx/strip_cover/strip_cover_gtest.cpp)
 
 target_link_libraries(unit_tester
         gtest
