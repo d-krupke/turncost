@@ -55,6 +55,13 @@ class IpSolverCplexBase {
   IpSolverCplexBase(const GridGraph &instance, const Costs costs);
   virtual ~IpSolverCplexBase() = default;
 
+  void SetCallback(IloCplex::LazyConstraintCallbackI* cb){
+    cplex_solver_.use(cb);
+  }
+
+  IloEnv& GetCplexEnv(){
+    return cplex_env_;
+  }
  private:
   ReturnTypes EvaluateSolveStatus();
 

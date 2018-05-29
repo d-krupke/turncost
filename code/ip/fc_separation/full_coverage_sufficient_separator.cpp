@@ -6,7 +6,7 @@ namespace turncostcover {
 namespace ip_formulation1 {
 
 void
-FullCoverageSufficientSeparation::CoverOnAConnectingWay(
+FullCoverageSufficientSeparator::CoverOnAConnectingWay(
     const IntegralSolution &solution,
     IloExpr *constr,
     Field v)
@@ -24,8 +24,8 @@ const
   }
 }
 
-size_t
-FullCoverageSufficientSeparation::CreateConstraint(
+std::unique_ptr<IloRange>
+FullCoverageSufficientSeparator::CreateConstraint(
     const std::vector<Coverage> &cycle,
     const std::vector<std::vector<Coverage>> &cycles,
     const IntegralSolution &solution)
@@ -44,18 +44,17 @@ const
 
     IloExpr constr =
         GetCoverageExpression(solution, fields_in_cycle, min_covered_field);
-    solver_->AddToModel(IloRange{solver_->cplex_env_, 1, constr, IloInfinity});
-    return 1;
+    return std::make_unique<IloRange>(solver_->cplex_env_, 1, constr, IloInfinity);
   } catch (MinCoveredFieldNotFoundException e) {
     std::cout
         << "Could not find min covered field in component. Skipping component."
         << std::endl;
-    return 0;
+    return std::unique_ptr<IloRange>{nullptr};
   }
 }
 
 void
-FullCoverageSufficientSeparation::CoverBySomeUnusedCoverage(
+FullCoverageSufficientSeparator::CoverBySomeUnusedCoverage(
     const Field field,
     const IntegralSolution &solution,
     IloExpr *constr)
@@ -67,7 +66,7 @@ const
 }
 
 IloExpr
-FullCoverageSufficientSeparation::GetCoverageExpression(
+FullCoverageSufficientSeparator::GetCoverageExpression(
     const IntegralSolution &solution,
     const std::set<Field> &fields_in_cycle,
     Field min_covered_field)
@@ -86,7 +85,7 @@ const
 }
 
 std::set<Field>
-FullCoverageSufficientSeparation::GetFields(const std::vector<Coverage> &coverages)
+FullCoverageSufficientSeparator::GetFields(const std::vector<Coverage> &coverages)
 const
 {
   std::set<Field> fields;
@@ -97,7 +96,7 @@ const
 }
 
 std::set<Field>
-FullCoverageSufficientSeparation::MergeComponents(
+FullCoverageSufficientSeparator::MergeComponents(
     const IntegralSolution &solution,
     Field f,
     const std::vector<std::vector<Coverage>> &cycles)
@@ -121,7 +120,7 @@ const
 }
 
 Field
-FullCoverageSufficientSeparation::FindMinCoveredFieldInCycle(
+FullCoverageSufficientSeparator::FindMinCoveredFieldInCycle(
     const std::set<Field> &cycle,
     const IntegralSolution &solution)
 const

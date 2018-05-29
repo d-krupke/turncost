@@ -17,9 +17,8 @@ class PenaltySimpleSeparator : public FullCoverageSimpleSeparator {
 
  protected:
 
-  size_t
-  CreateConstraint(const IntegralSolution &solution,
-                   const std::set<Field> &comp_fields)
+  std::unique_ptr<IloRange>
+  CreateConstraint(const IntegralSolution &solution, const std::set<Field> &comp_fields)
   const override;
 
   virtual

@@ -11,12 +11,12 @@
 
 namespace turncostcover {
 namespace ip_formulation1 {
-class SubsetSufficientSeparation : public FullCoverageSufficientSeparation {
+class SubsetSufficientSeparation : public FullCoverageSufficientSeparator {
 
  public:
 
   SubsetSufficientSeparation(IpSolver *solver, const std::set<Field> &subset)
-      : FullCoverageSufficientSeparation{solver}, subset{subset}
+      : FullCoverageSufficientSeparator{solver}, subset{subset}
   {
 
   }

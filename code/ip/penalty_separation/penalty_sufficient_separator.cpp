@@ -6,8 +6,13 @@
 namespace turncostcover {
 namespace ip_formulation1 {
 PenaltySufficientSeparator::PenaltySufficientSeparator(IpSolver *solver)
-    : FullCoverageSufficientSeparation(solver) {}
-size_t PenaltySufficientSeparator::CreateConstraint(
+    : FullCoverageSufficientSeparator(solver)
+{
+  /* pass */
+}
+
+
+std::unique_ptr<IloRange> PenaltySufficientSeparator::CreateConstraint(
     const std::vector<Coverage> &cycle,
     const std::vector<std::vector<Coverage>> &cycles,
     const IntegralSolution &solution) const
@@ -40,9 +45,7 @@ size_t PenaltySufficientSeparator::CreateConstraint(
     assert(solver_->HasToBeCovered(mfe));
   }
 
-  IloRange constr{solver_->cplex_env_, 1, constr_expr, IloInfinity};
-  solver_->AddToModel(constr);
-  return 1;
+  return std::make_unique<IloRange>(solver_->cplex_env_, 1, constr_expr, IloInfinity);
 }
 
 }

@@ -13,19 +13,17 @@ struct EdgeUsedInSolutionPredicate {
  public:
   EdgeUsedInSolutionPredicate() = default;
 
-  EdgeUsedInSolutionPredicate(const GridGraph *gg,
-                              const IntegralSolution *solution)
-      :
-      gg{gg}, solution{solution} {}
+  EdgeUsedInSolutionPredicate(const GridGraph *gg, const IntegralSolution *solution)
+      : gg{gg}, solution{solution}
+  {
+    /* pass */
+  }
 
   template<typename Edge>
   bool
   operator()(const Edge &e) const
   {
-    const auto neighbors =
-        boost::make_iterator_range(boost::adjacent_vertices(boost::source(e,
-                                                                          *gg),
-                                                            *gg));
+    const auto neighbors = boost::make_iterator_range(boost::adjacent_vertices(boost::source(e, *gg), *gg));
     for (const auto u: neighbors) {
       const auto v = boost::source(e, *gg);
       const auto w = boost::target(e, *gg);
@@ -38,10 +36,10 @@ struct EdgeUsedInSolutionPredicate {
 };
 
 size_t
-FullCoverageSimpleSeparator::Separate(const IntegralSolution &solution)
+FullCoverageSimpleSeparator::Separate(const IntegralSolution &solution,
+                                      const std::function<void(IloRange &)> &f_add_constraint)
 {
-  std::cout
-      << "Searching for applications of simple insufficient separation constraint...\n";
+  std::cout << "Searching for applications of simple insufficient separation constraint...\n";
   size_t cuts_added = 0;
 
   std::map<int, std::set<Field>> components = GetComponents(solution);
@@ -49,7 +47,11 @@ FullCoverageSimpleSeparator::Separate(const IntegralSolution &solution)
 
     //create constraints
     for (const auto &comp: components) {
-      cuts_added += CreateConstraint(solution, comp.second);
+      auto constr = CreateConstraint(solution, comp.second);
+      if (constr) {
+        cuts_added += 1;
+        f_add_constraint(*constr);
+      }
 
       std::cout << "Added " << cuts_added << " new constraints.\n";
     }
@@ -59,16 +61,12 @@ FullCoverageSimpleSeparator::Separate(const IntegralSolution &solution)
   return cuts_added;
 }
 
-size_t
-FullCoverageSimpleSeparator::CreateConstraint(
-    const IntegralSolution &solution,
-    const std::set<Field> &comp_fields)
+std::unique_ptr<IloRange>
+FullCoverageSimpleSeparator::CreateConstraint(const IntegralSolution &solution, const std::set<Field> &comp_fields)
 const
 {
   IloExpr constr_expr = CreateLeaveComponentExpression(solution, comp_fields);
-  IloRange constr(this->solver_->cplex_env_, 2, constr_expr, IloInfinity);
-  this->solver_->AddToModel(constr);
-  return 1;
+  return std::make_unique<IloRange>(this->solver_->cplex_env_, 2, constr_expr, IloInfinity);
 }
 
 IloExpr
@@ -80,14 +78,12 @@ const
   IloExpr constr_expr(this->solver_->cplex_env_);
 
   for (const auto v: comp_fields) {
-    for (const auto uvw: ListAllPossibleCoverages(solution.GetGridGraph(),
-                                                  v)) {
+    for (const auto uvw: ListAllPossibleCoverages(solution.GetGridGraph(), v)) {
       const auto u = uvw.n1;
       const auto w = uvw.n2;
       if (comp_fields.count(u) == 0 || comp_fields.count(w) == 0) {
         if (uvw.IsUTurn()) {
-          constr_expr += 2 * this->solver_->GetCoverageVariable(
-              uvw);
+          constr_expr += 2 * this->solver_->GetCoverageVariable(uvw);
         } else { constr_expr += 1 * this->solver_->GetCoverageVariable(uvw); }
       }
     }
@@ -96,8 +92,7 @@ const
 }
 
 std::map<int, std::set<Field>>
-FullCoverageSimpleSeparator::GetComponents(
-    const IntegralSolution &solution)
+FullCoverageSimpleSeparator::GetComponents(const IntegralSolution &solution)
 const
 {
   boost::filtered_graph<GridGraph, EdgeUsedInSolutionPredicate>

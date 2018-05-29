@@ -41,3 +41,18 @@ TEST(FcIp, Large) {
   ASSERT_EQ(solution.GetCoverageObjectiveValue(costs),
             solution.GetLowerBound());
 }
+
+TEST(FcIp, DeAssis) {
+  std::string file = "/home/doms/Work/master_thesis/0998-10-91-149.in";
+  auto graph = turncostcover::LoadInstance(file);
+  ASSERT_TRUE(graph.IsConnected());
+  turncostcover::Costs costs;
+  costs.turn_costs = 1;
+  costs.dist_costs = 0;
+  auto solution = turncostcover::ip::ComputeOptimalTour(graph, costs, 120);
+
+  ASSERT_EQ(solution.GetNumComponents(), 1);
+  ASSERT_EQ(solution.GetCoverageObjectiveValue(costs), 32);//just for testing, doesn't match
+  ASSERT_EQ(solution.GetCoverageObjectiveValue(costs),
+            solution.GetLowerBound());
+}

@@ -47,7 +47,7 @@ IpSolverCplexBase::ReturnTypes IpSolverCplexBase::Solve(double max_time_s)
       return status_ = ReturnTypes::ERROR;
     }
     lower_bound_ = std::max(lower_bound_, cplex_solver_.getBestObjValue());
-  } catch (IloException e) {
+  } catch (IloException& e) {
     std::cerr << "Error while solving: " << e << std::endl;
     std::cout << "Failed Solve(): " << cplex_solver_.getCplexStatus()
               << std::endl;

@@ -18,13 +18,12 @@ class SubsetCoverageSimpleSeparation : public FullCoverageSimpleSeparator {
                                  const std::set<turncostcover::Field> &subset);
 
  protected:
-  size_t
-  CreateConstraint(const turncostcover::IntegralSolution &solution,
-                   const std::set<Field> &comp_fields)
+  std::unique_ptr<IloRange>
+  CreateConstraint(const IntegralSolution &solution, const std::set<Field> &comp_fields)
   const override
   {
     if (IsSkipComponent(comp_fields)) {
-      return 0;
+      return std::unique_ptr<IloRange>(nullptr);
     } else {
       using FCSS = FullCoverageSimpleSeparator;
       return FCSS::CreateConstraint(solution, comp_fields);

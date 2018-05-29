@@ -12,11 +12,11 @@
 namespace turncostcover {
 namespace ip_formulation1 {
 
-class PenaltySufficientSeparator : public FullCoverageSufficientSeparation {
+class PenaltySufficientSeparator : public FullCoverageSufficientSeparator {
  public:
   explicit PenaltySufficientSeparator(IpSolver *solver);
 
-  size_t
+  std::unique_ptr<IloRange>
   CreateConstraint(const std::vector<Coverage> &cycle,
                    const std::vector<std::vector<Coverage>> &cycles,
                    const IntegralSolution &solution)

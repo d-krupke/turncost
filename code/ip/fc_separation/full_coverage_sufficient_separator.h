@@ -10,27 +10,37 @@
 
 namespace turncostcover {
 namespace ip_formulation1 {
-class FullCoverageSufficientSeparation {
+class FullCoverageSufficientSeparator {
 
  public:
 
-  virtual size_t Separate(const IntegralSolution &solution)
+  virtual size_t Separate(const IntegralSolution &solution, std::function<void(IloRange&)>& f_add_constraint)
   {
     if (solution.GetNumComponents() <= 1) { return 0; }
 
     size_t cuts_added = 0;
     auto cycles = solution.CollectCycles();
     for (auto cycle: cycles) {
-      cuts_added += CreateConstraint(cycle, cycles, solution);
+      auto constr = CreateConstraint(cycle, cycles, solution);
+      if (constr) {
+        f_add_constraint(*constr);
+        cuts_added += 1;
+      }
     }
     assert(cuts_added > 0);
-    assert(cuts_added
-               != 1);//For every useful component there should be one cut. If there is only 1 cut,
+    assert(cuts_added != 1);//For every useful component there should be one cut. If there is only 1 cut,
     // there is only one useful component (possibly bug!).
     return cuts_added;
   }
 
-  explicit FullCoverageSufficientSeparation(IpSolver *solver)
+  virtual size_t Separate(const IntegralSolution &solution)
+  {
+    assert(this->solver_!= nullptr);
+    std::function<void(IloRange &)> lambda = [&](IloRange &constr) { this->solver_->AddToModel(constr); };
+    return Separate(solution, lambda);
+  }
+
+  explicit FullCoverageSufficientSeparator(IpSolver *solver)
       : solver_(solver) {}
 
  protected:
@@ -67,7 +77,7 @@ class FullCoverageSufficientSeparation {
                         Field min_covered_field)
   const;
 
-  virtual size_t
+  virtual std::unique_ptr<IloRange>
   CreateConstraint(const std::vector<Coverage> &cycle,
                    const std::vector<std::vector<Coverage>> &cycles,
                    const IntegralSolution &solution)

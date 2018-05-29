@@ -11,6 +11,7 @@
 #include "subset_sufficient_separator.h"
 #include "subset_voronoi_separation.h"
 #include "../../apx/connect/connect.h"
+#include "../integer_programming.h"
 
 TEST(IpSubset, BaseTestEmpty)
 {
@@ -27,12 +28,10 @@ TEST(IpSubset, BaseTestEmpty)
   costs.dist_costs = 1;
   std::set<turncostcover::Field> subset;
 
-  turncostcover::ip_formulation1::IpSolver solver{graph, subset, costs};
-  auto apx_solution = apx::ApproximateSubsetCycleCover(graph, subset, costs);
-  solver.AddSolution(apx_solution);
-  solver.Solve();
 
-  ASSERT_EQ(std::lround(solver.GetObjectiveValue()), 0);
+  auto solution = turncostcover::ip::ComputeOptimalSubsetCycleCover(graph, subset, costs, 120);
+  auto obj = std::lround(solution.GetCoverageObjectiveValue(costs));
+  ASSERT_EQ(obj, 0);
 }
 
 TEST(IpSubset, BaseTest)
@@ -56,7 +55,10 @@ TEST(IpSubset, BaseTest)
   solver.AddSolution(apx_solution);
   solver.Solve();
 
-  ASSERT_EQ(std::lround(solver.GetObjectiveValue()),
+  auto solution = turncostcover::ip::ComputeOptimalSubsetCycleCover(graph, subset, costs, 120);
+  auto obj = solution.GetCoverageObjectiveValue(costs);
+
+  ASSERT_EQ(std::lround(obj),
             8 * costs.dist_costs + 4 * costs.turn_costs);
 }
 
@@ -113,38 +115,8 @@ TEST(IpSubset, DifficultConnectTest)
   for (const auto c: coords_connect) {
     ASSERT_FALSE(solver.HasToBeCovered(graph.GetVertex(c)));
   }
+  auto solution = turncostcover::ip::ComputeOptimalSubsetTour(graph, subset, costs, 120);
 
-  //Add apx to initial solutions
-  auto apx_solution_t = apx::ApproximateSubsetTour(graph, subset, costs);
-  auto apx_solution_cc = apx::ApproximateSubsetCycleCover(graph, subset, costs);
-  solver.AddSolution(apx_solution_t, "apx-t");
-  solver.AddSolution(apx_solution_cc, "apx-cc");
-
-  //initial Solve
-  solver.Solve();
-
-  //eliminate subtours
-  turncostcover::ip_formulation1::SubsetCoverageSimpleSeparation
-      s1{&solver, subset};
-  turncostcover::ip_formulation1::SubsetSufficientSeparation
-      s2{&solver, subset};
-  turncostcover::ip_formulation1::SubsetVoronoiSeparation s3{&solver, subset};
-
-  auto solution = solver.GetSolution();
-  while (solution.GetNumComponents() > 1) {
-    std::cout << "Added " << s1.Separate(solution)
-              << " simple separation constraints" << std::endl;
-    std::cout << "Added " << s2.Separate(solution)
-              << " sufficient separation constraints" << std::endl;
-    std::cout << "Added " << s3.Separate(solution)
-              << " voronoi separation constraints" << std::endl;
-    auto connected_solution = solution;
-    apx::ConnectDistantCycles(&solution, costs);
-    solver.AddSolution(connected_solution, "connected");
-    solver.AddSolution(apx_solution_t, "apx-t");
-    solver.Solve();
-    solution = solver.GetSolution();
-  }
   ASSERT_EQ(solution.GetNumComponents(), 1);
   ASSERT_EQ(solution.GetCoverageObjectiveValue(costs),
             (4 + 4 + 8 + 4) * costs.turn_costs

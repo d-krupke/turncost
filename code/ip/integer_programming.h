@@ -5,12 +5,18 @@
 #ifndef GRIDGRAPH_INTEGER_PROGRAMMING_H
 #define GRIDGRAPH_INTEGER_PROGRAMMING_H
 
+#include "subset_separation/subset_simple_separator.h"
+#include "subset_separation/subset_sufficient_separator.h"
+#include "subset_separation/subset_voronoi_separation.h"
 #include "fc_separation/full_coverage_simple_separator.h"
 #include "fc_separation/full_coverage_sufficient_separator.h"
+#include "fc_separation/full_coverage_separation_callback.h"
 #include "general_cc_solver/ip_solver.h"
 #include "../problem_instance/costs.h"
 #include "../problem_instance/solution/solution.h"
 #include "../apx/connect/connect.h"
+#include "./subset_separation/subset_separation_callback.h"
+#include "./penalty_separation/penalty_separation_callback.h"
 
 namespace turncostcover {
 namespace ip {
@@ -18,57 +24,33 @@ using namespace turncostcover::ip_formulation1;
 
 IntegralSolution ComputeOptimalCycleCover(const GridGraph &graph,
                                           Costs costs,
-                                          double deadline_s)
-{
-  IpSolver ip_solver{graph, costs};
-  auto apx_cc_solution = apx::ApproximateCycleCover(graph, costs);
-  ip_solver.AddSolution(apx_cc_solution);
-  ip_solver.Solve(deadline_s);
-  return ip_solver.GetSolution();
-}
+                                          double deadline_s);
 
 IntegralSolution ComputeOptimalTour(const GridGraph &graph,
                                     Costs costs,
-                                    double deadline)
-{
-  using clock = std::chrono::high_resolution_clock;
-  using std::chrono::duration_cast;
-  using time_unit = std::chrono::seconds;
+                                    double deadline, bool cb_mode = true);
 
-  auto start_time = clock::now();
-  IpSolver solver{graph, costs};
+IntegralSolution ComputeOptimalSubsetCycleCover(const GridGraph &graph,
+                                                const std::set<turncostcover::Field> &subset,
+                                                Costs costs,
+                                                double deadline);
 
-  //initial Solve
-  auto apx_solution_tour = apx::ApproximateTour(graph, costs);
-  auto apx_solution_cc = apx::ApproximateCycleCover(graph, costs);
-  solver.AddSolution(apx_solution_tour, "APXT");
-  solver.AddSolution(apx_solution_cc, "APXCC");
-  solver.Solve(deadline);
-  IntegralSolution ip_solution = solver.GetSolution();
-  // TODO: use callbacks instead (not critical).
-  while (FullCoverageSimpleSeparator{&solver}.Separate(ip_solution)
-      + FullCoverageSufficientSeparation{&solver}.Separate(ip_solution) > 0) {
-    solver.AddSolution(apx_solution_tour, "APXT");
-    apx::ConnectAdjacentCycles(&ip_solution, costs);
-    solver.AddSolution(ip_solution, "ConnectedPreviousSolution");
-    auto passed = duration_cast<time_unit>(clock::now() - start_time).count();
-    auto remaining_time_s = deadline - passed;
-    if (remaining_time_s > 0) { solver.Solve(remaining_time_s); }
-    else break;
-    ip_solution = solver.GetSolution();
-    //solver.set_lower_bound_constraint(ip_solution.GetLowerBound());
-  }
-  if (ip_solution.GetNumComponents() > 1) {
-    std::cout
-        << "Final solution of IP is not connected (probably due to timeout). "
-        << "Connecting it via heuristic."
-        << std::endl;
-    apx::ConnectAdjacentCycles(&ip_solution, costs);
-  }
-  return ip_solution;
-}
+IntegralSolution ComputeOptimalSubsetTour(const GridGraph &graph,
+                                          const std::set<turncostcover::Field> &subset,
+                                          Costs costs,
+                                          double deadline,
+                                          bool cb_mode = true);
 
-//TODO subtour and penalty
+IntegralSolution ComputeOptimalPenaltyCycleCover(const GridGraph &graph,
+                                           std::map<turncostcover::Field, double> &penalties,
+                                           Costs costs,
+                                           double deadline);
+
+IntegralSolution ComputeOptimalPenaltyTour(const GridGraph &graph,
+                                           std::map<turncostcover::Field, double> &penalties,
+                                           Costs costs,
+                                           double deadline,
+                                           bool cb_mode = true);
 
 }
 }

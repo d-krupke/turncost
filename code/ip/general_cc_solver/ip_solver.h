@@ -8,6 +8,7 @@
 #include "../../utils/cplex.hpp"
 #include "../../problem_instance/grid_graph.h"
 #include <ctime>
+#include <mutex>
 #include "ip_solver_cplex_base.h"
 #include "../../problem_instance/coverage.h"
 #include "../../problem_instance/solution/solution.h"
@@ -58,6 +59,9 @@ class IpSolver : public IpSolverCplexBase {
 
   double GetPenalty(turncostcover::Field f) const { return penalties_.at(f); }
 
+  ///TODO ugly but the callback needs access to the variable map
+  std::map<VariableIndex, IloIntVar> &GetEdgeVariableMap() { return variable_map_; };
+  std::mutex &GetMutex() { return mutex; }
  protected:
 
   void CreateIp();
@@ -78,10 +82,13 @@ class IpSolver : public IpSolverCplexBase {
   void AddCoverageConstraint(Field v);
   void AddObjectiveFunction();
 
+
+
  private:
-  std::map<VariableIndex, IloIntVar> variable_map_;
+  std::mutex mutex;
   std::map<turncostcover::Field, IloIntVar> penalty_variable_map_;
   std::map<turncostcover::Field, double> penalties_;
+  std::map<VariableIndex, IloIntVar> variable_map_;
 };
 
 }

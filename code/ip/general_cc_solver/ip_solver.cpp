@@ -2,8 +2,9 @@
 // Created by Dominik Krupke, http://krupke.cc on 6/20/16.
 //
 
-#include "ip_solver.h"
 #include <stdexcept>
+#include <map>
+#include "ip_solver.h"
 
 namespace turncostcover {
 namespace ip_formulation1 {

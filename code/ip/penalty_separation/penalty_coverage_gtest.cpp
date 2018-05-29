@@ -11,7 +11,7 @@
 #include "penalty_voronoi_separator.h"
 #include "penalty_sufficient_separator.h"
 #include "../../apx/connect/connect.h"
-
+#include "../integer_programming.h"
 
 TEST(IpPenalty, Large)
 {
@@ -39,8 +39,8 @@ TEST(IpPenalty, Large)
   turncostcover::ip_formulation1::PenaltyVoronoiSeparator pvs{&solver};
 
   auto solution = solver.GetSolution();
-  while (pss.Separate(solution) + pSufS.Separate(solution) + pvs.Separate(
-      solution) > 0) {
+  while (pss.Separate(solution)
+      + pSufS.Separate(solution) + pvs.Separate(solution) > 0) {
     solver.AddSolution(apx_solution, "APX-T");
     solver.Solve();
     solution = solver.GetSolution();
@@ -98,7 +98,6 @@ TEST(IpPenalty, DifficultConnectTest)
   for (const auto c: coords_connect) penalties[graph.GetVertex(c)] = 0;
 
   turncostcover::ip_formulation1::IpSolver solver{graph, penalties, costs};
-
   //Test HasToBeCovered
   for (const auto c: coords_subset) ASSERT_TRUE(solver.HasToBeCovered(graph.GetVertex(
         c)));
@@ -106,31 +105,7 @@ TEST(IpPenalty, DifficultConnectTest)
         c)));
 
 
-  auto apx_solution_t = apx::ApproximatePenaltyTour(graph, penalties, costs);
-  std::cout << "APX-T=" << apx_solution_t.GetCoverageObjectiveValue(costs) << std::endl;
-  auto apx_solution_cc =
-      apx::ApproximatePenaltyCycleCover(graph, penalties, costs);
-  std::cout << "APX-CC=" << apx_solution_cc.GetCoverageObjectiveValue(costs) << std::endl;
-  solver.AddSolution(apx_solution_t, "apx-t");
-  solver.AddSolution(apx_solution_cc, "apx-cc");
-  solver.Solve();
-
-  turncostcover::ip_formulation1::PenaltySimpleSeparator s1{&solver};
-  turncostcover::ip_formulation1::PenaltySufficientSeparator s2{&solver};
-  turncostcover::ip_formulation1::PenaltyVoronoiSeparator s3{&solver};
-
-  auto solution = solver.GetSolution();
-  while (solution.GetNumComponents() > 1) {
-    std::cout << "Added " << s1.Separate(solution) << " simple separation constraints" << std::endl;
-    std::cout << "Added " << s2.Separate(solution) << " sufficient separation constraints" << std::endl;
-    std::cout << "Added " << s3.Separate(solution) << " voronoi separation constraints" << std::endl;
-    auto connected_solution = solution;
-    apx::ConnectDistantCycles(&solution, costs);
-    solver.AddSolution(connected_solution, "connected");
-    solver.AddSolution(apx_solution_t, "apx-t");
-    solver.Solve();
-    solution = solver.GetSolution();
-  }
+  auto solution = turncostcover::ip::ComputeOptimalPenaltyTour(graph, penalties, costs, 120);
   ASSERT_EQ(solution.GetNumComponents(), 1);
   ASSERT_EQ(solution.GetCoverageObjectiveValue(costs),
             (4 + 4 + 8 + 4) * costs.turn_costs + (10 + 10 + 16 + 2) * costs.dist_costs);

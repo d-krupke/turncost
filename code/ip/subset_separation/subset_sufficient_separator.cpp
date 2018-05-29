@@ -25,7 +25,7 @@ const
   assert(f.size() != subset.size());
   //TODO: This case can actually happen for non-optimal solutions and should be handled.
 
-  using FCSS = FullCoverageSufficientSeparation;
+  using FCSS = FullCoverageSufficientSeparator;
   auto min_covered_field = FCSS::FindMinCoveredFieldInCycle(f, solution);
   return min_covered_field;
 }

@@ -10,9 +10,8 @@ namespace ip_formulation1 {
 PenaltySimpleSeparator::PenaltySimpleSeparator(IpSolver *solver)
     : FullCoverageSimpleSeparator(solver) {}
 
-size_t
-PenaltySimpleSeparator::CreateConstraint(const IntegralSolution &solution,
-                                         const std::set<Field> &comp_fields)
+std::unique_ptr<IloRange>
+PenaltySimpleSeparator::CreateConstraint(const IntegralSolution &solution, const std::set<Field> &comp_fields)
 const
 {
   IloExpr constr_expr = CreateLeaveComponentExpression(solution, comp_fields);
@@ -27,7 +26,7 @@ const
     if (solver_->GetPenalty(max_field_internal) == 0) {
       constr_expr.end();
       std::cout << "Skipping separator for void component." << std::endl;
-      return 0;
+      return std::unique_ptr<IloRange>{nullptr};
     }
   }
   if (solver_->HasPenaltyVariable(max_field_external)) {
@@ -36,11 +35,7 @@ const
     assert(solver_->GetPenalty(max_field_external) != 0);
   }
 
-  this->solver_->AddToModel(IloRange(this->solver_->cplex_env_,
-                                    2,
-                                    constr_expr,
-                                    IloInfinity));
-  return 1;
+  return std::make_unique<IloRange>(this->solver_->cplex_env_, 2, constr_expr, IloInfinity);
 }
 
 Field
