@@ -12,13 +12,10 @@
 #include "ip/general_cc_solver/ip_solver.h"
 #include "ip/integer_programming.h"
 #include "arkin-apx/approximation.h"
+#include "solver.h"
 
 namespace po = boost::program_options;
 
-
-enum class Algorithm {
-  IP, KRUPKE_APX, ARKINETAL_APX
-};
 
 enum class Problem {
   CC, TOUR, SUBSET_CC, SUBSET_TOUR, PENALTY_CC, PENALTY_TOUR
@@ -36,7 +33,7 @@ struct LogEntry {
 void run(std::string instance,
          turncostcover::Costs cost,
          Problem problem,
-         Algorithm algorithm,
+         turncostcover::Algorithm algorithm,
          bool use_callbacks,
          size_t timeout,
          LogEntry *log)
@@ -52,35 +49,16 @@ void run(std::string instance,
   tc::IntegralSolution solution;
   tc::GridGraph gg;
   switch (problem) {
-    case Problem::CC:gg = turncostcover::LoadInstance(instance);
-      switch (algorithm) {
-        case Algorithm::ARKINETAL_APX:
-          solution = aapx::ApproximateFullCycleCoverViaStripCover( gg, cost);
-          break;
-        case Algorithm::KRUPKE_APX:
-          solution = tc::apx::ApproximateCycleCover(gg, cost);
-          break;
-        case Algorithm::IP:
-          solution = tc::ip::ComputeOptimalCycleCover(gg, cost, timeout);
-          break;
-        default: assert(false);
-      }
+    case Problem::CC: {
+      gg = turncostcover::LoadInstance(instance);
+      solution = tc::ComputeFullCycleCover(gg, cost, algorithm, timeout);
       break;
-    case Problem::TOUR:gg = tc::LoadInstance(instance);
-      switch (algorithm) {
-        case Algorithm::ARKINETAL_APX:
-          solution = aapx::ApproximateFullCycleCoverViaStripCover(gg, cost);
-          tc::apx::ConnectAdjacentCycles(&solution, cost);
-          break;
-        case Algorithm::KRUPKE_APX:
-          solution = tc::apx::ApproximateTour(gg, cost);
-          break;
-        case Algorithm::IP:
-          solution = tc::ip::ComputeOptimalTour(gg, cost, timeout, use_callbacks);
-          break;
-        default: assert(false);
-      }
+    }
+    case Problem::TOUR: {
+      gg = tc::LoadInstance(instance);
+      solution = tc::ComputeFullTour(gg, cost, algorithm, timeout, use_callbacks);
       break;
+    }
     case Problem::SUBSET_CC:
     case Problem::SUBSET_TOUR:
     case Problem::PENALTY_CC:
@@ -134,14 +112,14 @@ main(const int argc, const char **argv)
        "timeout for IP in s.")
       ("penalty", po::value<double>(), "Uniform penalty for all fields")
       ("output,o", po::value<std::string>(&output_file), "Output file")
-      ("nocallbacks","Deactivates the usage of callbacks. Instead only to an optimally solved problem constraints are "
-                     "added. This can sometimes be faster because the turn costs eliminate many subtours.");
+      ("nocallbacks", "Deactivates the usage of callbacks. Instead only to an optimally solved problem constraints are "
+                      "added. This can sometimes be faster because the turn costs eliminate many subtours.");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
-  bool use_callbacks = vm.count("nocallbacks")==0;
+  bool use_callbacks = vm.count("nocallbacks") == 0;
 
   //print help
   if (vm.count("help") > 0) {
@@ -160,7 +138,7 @@ main(const int argc, const char **argv)
   }
 
   assert(vm.count("penalty") == 0 || algorithm != "aapx");
-
+  using turncostcover::Algorithm;
   Algorithm a;
   if (algorithm == "ip") a = Algorithm::IP;
   else if (algorithm == "apx") a = Algorithm::KRUPKE_APX;

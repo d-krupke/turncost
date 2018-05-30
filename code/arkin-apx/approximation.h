@@ -9,10 +9,14 @@
 #include "../problem_instance/costs.h"
 #include "../problem_instance/grid_graph.h"
 #include "../problem_instance/solution/solution.h"
+#include "../apx/connect/connect.h"
 namespace turncostcover {
 namespace arkinapx {
 IntegralSolution ApproximateFullCycleCoverViaStripCover(const GridGraph &graph,
                                                         Costs costs);
+
+IntegralSolution ApproximateFullTourViaStripCover(const GridGraph &graph,
+                                                  Costs costs);
 }
 }
 #endif //TURNCOSTCOVER_ARKINAPX_APPROXIMATION_H

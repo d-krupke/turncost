@@ -27,7 +27,7 @@ add_subdirectory(./tests)
 add_subdirectory(./ip)
 add_subdirectory(./arkin-apx)
 
-add_executable(solver main.cpp)
+add_executable(solver main.cpp solver.cpp solver.h)
 target_include_directories(solver PRIVATE ${INCLUDE_DIRS})
 target_link_libraries(solver    ${LIBRARIES})
 target_link_libraries(solver

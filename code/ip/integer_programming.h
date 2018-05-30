@@ -42,9 +42,9 @@ IntegralSolution ComputeOptimalSubsetTour(const GridGraph &graph,
                                           bool cb_mode = true);
 
 IntegralSolution ComputeOptimalPenaltyCycleCover(const GridGraph &graph,
-                                           std::map<turncostcover::Field, double> &penalties,
-                                           Costs costs,
-                                           double deadline);
+                                                 const std::map<Field, double> &penalties,
+                                                 Costs costs,
+                                                 double deadline);
 
 IntegralSolution ComputeOptimalPenaltyTour(const GridGraph &graph,
                                            std::map<turncostcover::Field, double> &penalties,
