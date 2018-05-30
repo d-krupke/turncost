@@ -11,12 +11,13 @@
 #include "arkin-apx/approximation.h"
 #include "ip/general_cc_solver/ip_solver.h"
 #include "ip/integer_programming.h"
+#include "arkin-apx/approximation.h"
 
 namespace po = boost::program_options;
 
 
 enum class Algorithm {
-  IP, KRUPKE_APX, ARKIN_APX
+  IP, KRUPKE_APX, ARKINETAL_APX
 };
 
 enum class Problem {
@@ -36,6 +37,7 @@ void run(std::string instance,
          turncostcover::Costs cost,
          Problem problem,
          Algorithm algorithm,
+         bool use_callbacks,
          size_t timeout,
          LogEntry *log)
 {
@@ -52,39 +54,29 @@ void run(std::string instance,
   switch (problem) {
     case Problem::CC:gg = turncostcover::LoadInstance(instance);
       switch (algorithm) {
-        case Algorithm::ARKIN_APX:
-          solution =
-              aapx::ApproximateFullCycleCoverViaStripCover(
-                  gg,
-                  cost);
+        case Algorithm::ARKINETAL_APX:
+          solution = aapx::ApproximateFullCycleCoverViaStripCover( gg, cost);
           break;
         case Algorithm::KRUPKE_APX:
-          solution =
-              tc::apx::ApproximateCycleCover(gg, cost);
+          solution = tc::apx::ApproximateCycleCover(gg, cost);
           break;
         case Algorithm::IP:
-          solution =
-              tc::ip::ComputeOptimalCycleCover(gg,
-                                               cost,
-                                               timeout);
+          solution = tc::ip::ComputeOptimalCycleCover(gg, cost, timeout);
           break;
         default: assert(false);
       }
       break;
     case Problem::TOUR:gg = tc::LoadInstance(instance);
       switch (algorithm) {
-        case Algorithm::ARKIN_APX:
-          solution = aapx::ApproximateFullCycleCoverViaStripCover(gg,
-                                                                  cost);
+        case Algorithm::ARKINETAL_APX:
+          solution = aapx::ApproximateFullCycleCoverViaStripCover(gg, cost);
           tc::apx::ConnectAdjacentCycles(&solution, cost);
           break;
         case Algorithm::KRUPKE_APX:
           solution = tc::apx::ApproximateTour(gg, cost);
           break;
         case Algorithm::IP:
-          solution = tc::ip::ComputeOptimalTour(gg,
-                                                cost,
-                                                timeout);
+          solution = tc::ip::ComputeOptimalTour(gg, cost, timeout, use_callbacks);
           break;
         default: assert(false);
       }
@@ -141,11 +133,15 @@ main(const int argc, const char **argv)
        po::value<size_t>(&timeout)->default_value(36000, "10 hours"),
        "timeout for IP in s.")
       ("penalty", po::value<double>(), "Uniform penalty for all fields")
-      ("output,o", po::value<std::string>(&output_file), "Output file");
+      ("output,o", po::value<std::string>(&output_file), "Output file")
+      ("nocallbacks","Deactivates the usage of callbacks. Instead only to an optimally solved problem constraints are "
+                     "added. This can sometimes be faster because the turn costs eliminate many subtours.");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
+
+  bool use_callbacks = vm.count("nocallbacks")==0;
 
   //print help
   if (vm.count("help") > 0) {
@@ -168,7 +164,7 @@ main(const int argc, const char **argv)
   Algorithm a;
   if (algorithm == "ip") a = Algorithm::IP;
   else if (algorithm == "apx") a = Algorithm::KRUPKE_APX;
-  else if (algorithm == "aapx") a = Algorithm::ARKIN_APX;
+  else if (algorithm == "aapx") a = Algorithm::ARKINETAL_APX;
   else {
     std::cerr << "Unkown Algorithm " << algorithm << std::endl;
     std::exit(1);
@@ -214,7 +210,7 @@ main(const int argc, const char **argv)
       log.nr_pixel_covered = nr_covered_fields;
       log.runtime = duration_cast<time_unit>(end - start).count();
     } else {
-      run(filename, costs, p, a, timeout, &log);
+      run(filename, costs, p, a, use_callbacks, timeout, &log);
     }
   } catch (turncostcover::CouldNotLoadInstanceException &e) {
     std::cerr << e.message << std::endl;
