@@ -2,6 +2,7 @@
 // Created by Dominik Krupke, http://krupke.cc on 4/27/17.
 //
 
+#include <thread>
 #include "ip_solver_cplex_base.h"
 namespace turncostcover {
 namespace ip_formulation1 {
@@ -79,6 +80,11 @@ IpSolverCplexBase::IpSolverCplexBase(const GridGraph &instance,
   cplex_solver_.setParam(IloCplex::EpGap, 0);
   cplex_solver_.setParam(IloCplex::EpOpt, 1e-9);
   cplex_solver_.setParam(IloCplex::EpAGap, 0);
+  cplex_solver_.setParam(IloCplex::ParallelMode, IloCplex::Opportunistic);
+
+  auto nr_threads = std::thread::hardware_concurrency();
+  std::cout << "Using "<<nr_threads<<" threads for CPLEX."<<std::endl;
+  cplex_solver_.setParam(IloCplex::Threads, static_cast<CPXINT>(nr_threads));
 }
 IpSolverCplexBase::ReturnTypes IpSolverCplexBase::EvaluateSolveStatus()
 {

@@ -47,7 +47,7 @@ IntegralSolution ComputeOptimalPenaltyCycleCover(const GridGraph &graph,
                                                  double deadline);
 
 IntegralSolution ComputeOptimalPenaltyTour(const GridGraph &graph,
-                                           std::map<turncostcover::Field, double> &penalties,
+                                           const std::map<Field, double> &penalties,
                                            Costs costs,
                                            double deadline,
                                            bool cb_mode = true);

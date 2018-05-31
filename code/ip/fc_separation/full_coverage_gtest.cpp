@@ -52,7 +52,7 @@ TEST(FcIp, DeAssis) {
   auto solution = turncostcover::ip::ComputeOptimalTour(graph, costs, 120);
 
   ASSERT_EQ(solution.GetNumComponents(), 1);
-  ASSERT_EQ(solution.GetCoverageObjectiveValue(costs), 32);//just for testing, doesn't match
+  ASSERT_EQ(solution.GetCoverageObjectiveValue(costs), 30);//just for testing, doesn't match
   ASSERT_EQ(solution.GetCoverageObjectiveValue(costs),
             solution.GetLowerBound());
 }
