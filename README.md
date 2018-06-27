@@ -1,6 +1,6 @@
 # Tours with Turn Costs
 
-This repository contains the code for an approximated and exact solver for cycle covers and tours with turn costs in grid graphs. Further, additional material such as experimental results and test instances from a freshly submitted paper.
+This repository contains the code for an approximated and exact solver for cycle covers and tours with turn costs in grid graphs. Further, additional material such as experimental results and test instances.
 
 See also the example instances for how to code the instance files (obvious .csv files with one pixel per line).
 
