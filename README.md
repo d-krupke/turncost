@@ -11,7 +11,7 @@ The code emerged from a (nearly 2 year long but with interuptions) try-and-error
 The efficiency optimizations focused mainly on the cycle cover problem as it showed to be the primary challenge. For tours one could still get some additional speed ups for the approximation as well as the integer program. However, there probably wouldn't be any significant changes considering the solvable instance sizes. Hence, the necessary additional work is probably not worth it. If you are still interested, I can of course give you some details on potential improvements.
 
 
-The following external libraries are used:
+The following external libraries are used (they need inclusion but CMake should give you instructions):
 * [Blossom V Matching Algorithm](http://pub.ist.ac.at/~vnk/software.html) (Commercial usage could need a licence)
 * [pcst_fast](https://github.com/fraenkel-lab/pcst_fast/tree/master/src)
 * [IBM CPLEX](https://www.ibm.com/analytics/cplex-optimizer) (Note that this is a commercial software but it is much more powerful than the open source alternatives)
