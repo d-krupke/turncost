@@ -12,5 +12,6 @@ The efficiency optimizations focused mainly on the cycle cover problem as it sho
 
 
 The following external libraries are used:
-* [Blossom V Matching Algorithm](http://pub.ist.ac.at/~vnk/software.html)
+* [Blossom V Matching Algorithm](http://pub.ist.ac.at/~vnk/software.html) (Commercial usage could need a licence)
 * [pcst_fast](https://github.com/fraenkel-lab/pcst_fast/tree/master/src)
+* [IBM CPLEX](https://www.ibm.com/analytics/cplex-optimizer) (Note that this is a commercial software but it is much more powerful than the open source alternatives)
